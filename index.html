@@ -1285,6 +1285,11 @@ function App() {
     setMembers(data.members || []);
     setSchedules(data.schedules || {});
     setGrowthLogs(data.growthLogs || {});
+    // 시간대가 없는 예전 백업은 기본값을 그대로 쓴다
+    setSlotTimes({
+      ...DEFAULT_SLOT_TIMES,
+      ...(data.slotTimes || {})
+    });
     setActiveTab("all");
   };
   const enterCode = async code => {
@@ -1971,6 +1976,7 @@ function App() {
     members: members,
     schedules: schedules,
     growthLogs: growthLogs,
+    slotTimes: slotTimes,
     onImport: importData,
     onClose: () => setPanel(null)
   }), modalMode && /*#__PURE__*/React.createElement(MemberModal, {
@@ -3358,6 +3364,7 @@ function BackupPanel({
   members,
   schedules,
   growthLogs,
+  slotTimes,
   onImport,
   onClose
 }) {
@@ -3366,12 +3373,13 @@ function BackupPanel({
   const [msg, setMsg] = useState(null);
   const payload = JSON.stringify({
     app: "가족약속",
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     familyCode,
     members,
     schedules,
-    growthLogs
+    growthLogs,
+    slotTimes
   }, null, 2);
   const copy = async () => {
     try {
@@ -3393,7 +3401,7 @@ function BackupPanel({
         return;
       }
       onImport(data);
-      setMsg(`${data.members.length}명의 기록을 불러왔어요.`);
+      setMsg(`${data.members.length}명의 기록을 불러왔어요.` + (data.slotTimes ? " 복용 시간대도 함께 복원했어요." : " (예전 백업이라 복용 시간대는 기본값이에요.)"));
     } catch (e) {
       setMsg("읽을 수 없는 내용이에요. 백업 전체를 빠짐없이 붙여넣었는지 확인해 주세요.");
     }
@@ -3438,7 +3446,7 @@ function BackupPanel({
     }
   }, label))), tab === "export" ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-neutral-500 mb-3"
-  }, "가족 ", members.length, "명의 프로필·일정·성장 기록이 들어 있어요. 저장해 두면 나중에 그대로 되살릴 수 있어요."), /*#__PURE__*/React.createElement("div", {
+  }, "가족 ", members.length, "명의 프로필·일정·성장 기록과 복용 시간대 설정이 들어 있어요. 저장해 두면 나중에 그대로 되살릴 수 있어요."), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 mb-3"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: copy,
